@@ -52,10 +52,6 @@ class StockWarehouseOrderpoint(models.Model):
     _description = "Stock Buffer"
 
     @api.multi
-    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
-                 "buffer_profile_id.variability_id.factor",
-                 "product_uom.rounding", "red_override",
-                 "lead_days", "product_id.seller_ids.delay")
     def _compute_red_zone(self):
         for rec in self:
             if rec.replenish_method in ['replenish', 'min_max']:
@@ -72,9 +68,6 @@ class StockWarehouseOrderpoint(models.Model):
                 rec.red_zone_qty = rec.red_override
 
     @api.multi
-    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
-                 "order_cycle", "minimum_order_quantity",
-                 "product_uom.rounding", "green_override", "top_of_yellow")
     def _compute_green_zone(self):
         for rec in self:
             if rec.replenish_method in ['replenish', 'min_max']:
@@ -101,12 +94,6 @@ class StockWarehouseOrderpoint(models.Model):
             rec.top_of_green = rec.green_zone_qty + rec.top_of_yellow
 
     @api.multi
-    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
-                 "buffer_profile_id.variability_id.factor",
-                 "buffer_profile_id.replenish_method",
-                 "order_cycle", "minimum_order_quantity",
-                 "product_uom.rounding", "yellow_override",
-                 "red_zone_qty")
     def _compute_yellow_zone(self):
         for rec in self:
             if rec.replenish_method == 'min_max':
@@ -120,7 +107,6 @@ class StockWarehouseOrderpoint(models.Model):
             rec.top_of_yellow = rec.yellow_zone_qty + rec.red_zone_qty
 
     @api.multi
-    @api.depends("dlt")
     def _compute_procure_recommended_date(self):
         for rec in self:
             dlt = int(rec.dlt)
@@ -137,9 +123,6 @@ class StockWarehouseOrderpoint(models.Model):
             rec.procure_recommended_date = procure_recommended_date
 
     @api.multi
-    @api.depends("net_flow_position", "top_of_green",
-                 "qty_multiple", "product_uom", "procure_uom_id",
-                 "product_uom.rounding")
     def _compute_procure_recommended_qty(self):
         subtract_qty = self._quantity_in_progress()
         for rec in self:
@@ -227,7 +210,6 @@ class StockWarehouseOrderpoint(models.Model):
             rec.ddmrp_chart = '%s%s' % (div, script)
 
     @api.multi
-    @api.depends("red_zone_qty")
     def _compute_order_spike_threshold(self):
         # TODO: Add various methods to compute the spike threshold
         for rec in self:
@@ -242,7 +224,6 @@ class StockWarehouseOrderpoint(models.Model):
              ('location_id', '=', self.location_id.id),
              ('location_id', '=', False)], limit=1)
 
-    @api.depends('lead_days', 'product_id.seller_ids.delay')
     def _compute_dlt(self):
         for rec in self:
             if rec.buffer_profile_id.item_type == 'manufactured':
@@ -682,7 +663,12 @@ class StockWarehouseOrderpoint(models.Model):
         self.mrp_production_ids._calc_execution_priority()
         self.mapped("purchase_line_ids")._calc_execution_priority()
         # FIXME: temporary patch to force the recalculation of zones.
-        self._compute_red_zone()
+        self.env.add_todo(
+            self._fields['procure_recommended_qty', 'red_zone_qty',
+                         'yellow_zone_qty', 'green_zone_qty',
+                         'procure_recommended_date', 'procure_recommended_qty',
+                         'order_spike_threshold'], self)
+        self.recompute()
         return True
 
     @api.model
