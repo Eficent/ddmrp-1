@@ -52,7 +52,7 @@ class StockWarehouseOrderpoint(models.Model):
     _description = "Stock Buffer"
 
     @api.multi
-    @api.depends("dlt", "adu", "buffer_profile_id.lead_time_id.factor",
+    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
                  "buffer_profile_id.variability_id.factor",
                  "product_uom.rounding", "red_override",
                  "lead_days", "product_id.seller_ids.delay")
@@ -72,7 +72,7 @@ class StockWarehouseOrderpoint(models.Model):
                 rec.red_zone_qty = rec.red_override
 
     @api.multi
-    @api.depends("dlt", "adu", "buffer_profile_id.lead_time_id.factor",
+    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
                  "order_cycle", "minimum_order_quantity",
                  "product_uom.rounding", "green_override", "top_of_yellow")
     def _compute_green_zone(self):
@@ -101,7 +101,7 @@ class StockWarehouseOrderpoint(models.Model):
             rec.top_of_green = rec.green_zone_qty + rec.top_of_yellow
 
     @api.multi
-    @api.depends("dlt", "adu", "buffer_profile_id.lead_time_id.factor",
+    @api.depends("dlt", "buffer_profile_id.lead_time_id.factor",
                  "buffer_profile_id.variability_id.factor",
                  "buffer_profile_id.replenish_method",
                  "order_cycle", "minimum_order_quantity",
