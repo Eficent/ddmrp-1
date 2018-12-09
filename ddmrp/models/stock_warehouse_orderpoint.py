@@ -663,11 +663,11 @@ class StockWarehouseOrderpoint(models.Model):
         self.mrp_production_ids._calc_execution_priority()
         self.mapped("purchase_line_ids")._calc_execution_priority()
         # FIXME: temporary patch to force the recalculation of zones.
-        self.env.add_todo(
-            self._fields['procure_recommended_qty', 'red_zone_qty',
-                         'yellow_zone_qty', 'green_zone_qty',
-                         'procure_recommended_date', 'procure_recommended_qty',
-                         'order_spike_threshold'], self)
+        for field in ['procure_recommended_qty', 'red_zone_qty',
+            'yellow_zone_qty', 'green_zone_qty', 'procure_recommended_date',
+            'procure_recommended_qty', 'order_spike_threshold']:
+            self.env.add_todo(
+                self._fields[field], self)
         self.recompute()
         return True
 
