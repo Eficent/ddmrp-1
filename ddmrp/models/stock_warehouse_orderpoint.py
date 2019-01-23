@@ -281,6 +281,14 @@ class StockWarehouseOrderpoint(models.Model):
     adu_fixed = fields.Float(string="Fixed ADU",
                              default=1.0, digits=UNIT)
     order_cycle = fields.Float(string="Minimum Order Cycle (days)")
+    fixed_order_interval = fields.Integer(
+        string='Fixed Order Interval (days)',
+        help="If set, procurement will be recommended when the net "
+             "flow position has reached the yellow zone and the number "
+             "of days since the last procurement has reached at least the "
+             "value specified in this field.")
+    last_supply_execution_date = fields.Date('Last supply execution',
+                                             )
     minimum_order_quantity = fields.Float(string="Minimum Order Quantity",
                                           digits=UNIT)
     red_base_qty = fields.Float(string="Red Base Qty",
