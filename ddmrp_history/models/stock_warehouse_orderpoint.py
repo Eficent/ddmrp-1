@@ -59,6 +59,7 @@ class StockWarehouseOrderpoint(models.Model):
             'top_of_green': self.top_of_green,
             'net_flow_position': self.net_flow_position,
             'on_hand_position': self.product_location_qty,
+            'adu': self.adu,
         }
         return data
 

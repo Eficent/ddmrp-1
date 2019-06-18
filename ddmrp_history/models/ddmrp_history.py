@@ -40,3 +40,7 @@ class DdmrpHistory(models.Model):
         help="On-Hand Position",
         group_operator="avg",
     )
+    adu = fields.Float(
+        string="ADU",
+        help="Average Daily Usage", group_operator="avg",
+    )
